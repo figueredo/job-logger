@@ -22,7 +22,7 @@ class JobLogger
         elapsedTime: elapsedTime
         date: Date.now() - elapsedTime
         request:
-          metadata = requestMetadata
+          metadata: requestMetadata
         response:
           metadata: responseMetadata
     }
