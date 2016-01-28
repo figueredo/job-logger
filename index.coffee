@@ -16,8 +16,8 @@ class JobLogger
     index = "#{@indexPrefix}-#{todaySuffix}"
 
     return {
-      _index: index
-      _type: @type
+      index: index
+      type: @type
       body:
         elapsedTime: elapsedTime
         date: Date.now() - elapsedTime
