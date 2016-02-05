@@ -6,7 +6,9 @@ class JobLogger
 
   log: ({error,request,response,elapsedTime}, callback) =>
     job = @formatLogEntry {error,request,response,elapsedTime}
-    @client.lpush @jobLogQueue, JSON.stringify(job), callback
+    @client.lpush @jobLogQueue, JSON.stringify(job), (error) =>
+      delete error.code if error?
+      callback error
 
   formatLogEntry: ({error,request,response,elapsedTime}) =>
     todaySuffix = moment.utc().format('YYYY-MM-DD')
