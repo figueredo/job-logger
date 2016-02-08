@@ -14,6 +14,7 @@ class JobLogger
     todaySuffix = moment.utc().format('YYYY-MM-DD')
     requestMetadata  = _.cloneDeep(request?.metadata  ? {})
     responseMetadata = _.cloneDeep(response?.metadata ? {})
+    delete requestMetadata.auth?.token
     responseMetadata.success = (responseMetadata.code < 500)
     index = "#{@indexPrefix}-#{todaySuffix}"
 
