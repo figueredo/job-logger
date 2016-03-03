@@ -15,15 +15,17 @@ describe 'when called with a token', ->
       jobLogQueue: 'mah-queue'
       indexPrefix: 'foo'
       type: 'thipeh'
+      sampleRate: 1.00
     }
 
-    error = null
-    request =
-      metadata:
-        auth: {uuid: 'the-uuid', token: 'the-token'}
-    response = {}
-    elapsedTime = 0
-    @sut.log {error, request, response, elapsedTime}, done
+    record =
+      error: null
+      request:
+        metadata:
+          auth: {uuid: 'the-uuid', token: 'the-token'}
+      response: {}
+      elapsedTime: 0
+    @sut.log record, done
 
   it 'should remove the token before logging the record', (done) ->
     @client.lpop 'mah-queue', (error, record) =>
