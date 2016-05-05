@@ -16,20 +16,21 @@ class JobLogger
       delete error.code if error?
       callback error
 
-  formatLogEntry: ({error,request,response,elapsedTime}) =>
+  formatLogEntry: ({request,response,elapsedTime,date}) =>
     todaySuffix = moment.utc().format('YYYY-MM-DD')
     requestMetadata  = _.cloneDeep(request?.metadata  ? {})
     responseMetadata = _.cloneDeep(response?.metadata ? {})
     delete requestMetadata.auth?.token
     responseMetadata.success = (responseMetadata.code < 500)
     index = "#{@indexPrefix}-#{todaySuffix}"
+    date ?= Date.now() - elapsedTime
 
     return {
       index: index
       type: @type
       body:
         elapsedTime: elapsedTime
-        date: Date.now() - elapsedTime
+        date: date
         request:
           metadata: requestMetadata
         response:
