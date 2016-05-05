@@ -9,9 +9,9 @@ class JobLogger
     throw new Error('sampleRate is required') unless @sampleRate?
     throw new Error('type is required') unless @type?
 
-  log: ({error,request,response,elapsedTime}, callback) =>
+  log: ({error,request,response,elapsedTime,date}, callback) =>
     return callback() if Math.random() > @sampleRate
-    job = @formatLogEntry {error,request,response,elapsedTime}
+    job = @formatLogEntry {error,request,response,elapsedTime,date}
     @client.lpush @jobLogQueue, JSON.stringify(job), (error) =>
       delete error.code if error?
       callback error
