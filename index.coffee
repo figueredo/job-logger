@@ -29,6 +29,7 @@ class JobLogger
       index: index
       type: @type
       body:
+        type: @type
         elapsedTime: elapsedTime
         date: date
         request:
