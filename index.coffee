@@ -20,10 +20,21 @@ class JobLogger
     todaySuffix = moment.utc().format('YYYY-MM-DD')
     requestMetadata  = _.cloneDeep(request?.metadata  ? {})
     responseMetadata = _.cloneDeep(response?.metadata ? {})
+
+    {metrics} = responseMetadata
     delete requestMetadata.auth?.token
+
+    if metrics
+      elapsedTime ?= metrics.dequeueResponseAt - metrics.enqueueRequestAt
+      date ?= metrics.enqueueRequestAt
+      requestLagTime = metrics.dequeueRequestAt - metrics.enqueueRequestAt
+      responseLagTime = metrics.dequeueResponseAt - metrics.enqueueResponseAt
+
+    date ?= Date.now() - elapsedTime # remove this next time you see it
+
     responseMetadata.success = (responseMetadata.code < 500)
+
     index = "#{@indexPrefix}-#{todaySuffix}"
-    date ?= Date.now() - elapsedTime
 
     return {
       index: index
@@ -31,6 +42,8 @@ class JobLogger
       body:
         type: @type
         elapsedTime: elapsedTime
+        requestLagTime: requestLagTime
+        responseLagTime: responseLagTime
         date: date
         request:
           metadata: requestMetadata
