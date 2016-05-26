@@ -25,10 +25,10 @@ class JobLogger
     delete requestMetadata.auth?.token
 
     if metrics
-      elapsedTime ?= metrics.dequeueResponseAt - metrics.enqueueRequestAt
+      elapsedTime ?= Math.floor(metrics.dequeueResponseAt - metrics.enqueueRequestAt)
       date ?= metrics.enqueueRequestAt
-      requestLagTime = metrics.dequeueRequestAt - metrics.enqueueRequestAt
-      responseLagTime = metrics.dequeueResponseAt - metrics.enqueueResponseAt
+      requestLagTime = Math.floor(metrics.dequeueRequestAt - metrics.enqueueRequestAt)
+      responseLagTime = Math.floor(metrics.dequeueResponseAt - metrics.enqueueResponseAt)
 
     date ?= Date.now() - elapsedTime # remove this next time you see it
 
