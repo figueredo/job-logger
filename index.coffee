@@ -25,12 +25,12 @@ class JobLogger
     delete requestMetadata.auth?.token
 
     if metrics
-      elapsedTime ?= Math.floor(metrics.dequeueResponseAt - metrics.enqueueRequestAt)
-      date ?= metrics.enqueueRequestAt
-      requestLagTime = Math.floor(metrics.dequeueRequestAt - metrics.enqueueRequestAt)
+      date           ?= Math.floor(metrics.enqueueRequestAt)
+      elapsedTime    ?= Math.floor(metrics.dequeueResponseAt - metrics.enqueueRequestAt)
+      requestLagTime  = Math.floor(metrics.dequeueRequestAt - metrics.enqueueRequestAt)
       responseLagTime = Math.floor(metrics.dequeueResponseAt - metrics.enqueueResponseAt)
 
-    date ?= Date.now() - elapsedTime # remove this next time you see it
+    date ?= Math.floor(Date.now() - elapsedTime) # remove this next time you see it
 
     responseMetadata.success = (responseMetadata.code < 500)
 
