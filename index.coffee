@@ -27,6 +27,7 @@ class JobLogger
     if metrics
       date           ?= Math.floor(metrics.enqueueRequestAt)
       elapsedTime    ?= Math.floor(metrics.dequeueResponseAt - metrics.enqueueRequestAt)
+      jitter          = Math.floor(metrics.jitter / metrics.count) if metrics.count > 0
       requestLagTime  = Math.floor(metrics.dequeueRequestAt - metrics.enqueueRequestAt)
       responseLagTime = Math.floor(metrics.dequeueResponseAt - metrics.enqueueResponseAt)
 
@@ -41,10 +42,11 @@ class JobLogger
       type: @type
       body:
         type: @type
+        date: date
         elapsedTime: elapsedTime
         requestLagTime: requestLagTime
         responseLagTime: responseLagTime
-        date: date
+        jitter: jitter
         rawDataSize: response?.rawData?.length ? 0
         request:
           metadata: requestMetadata
