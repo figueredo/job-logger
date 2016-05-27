@@ -45,7 +45,7 @@ class JobLogger
         requestLagTime: requestLagTime
         responseLagTime: responseLagTime
         date: date
-        rawDataSize: response.rawData?.length ? 0
+        rawDataSize: response?.rawData?.length ? 0
         request:
           metadata: requestMetadata
         response:
