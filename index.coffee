@@ -1,4 +1,5 @@
 _ = require 'lodash'
+async = require 'async'
 moment = require 'moment'
 
 class JobLogger
@@ -9,20 +10,18 @@ class JobLogger
     throw new Error('type is required') unless @type?
 
   log: ({error,request,response,elapsedTime,date}, callback) =>
-    return callback() unless request.metadata?.jobLog?.enabled
-    job = @formatLogEntry {error,request,response,elapsedTime,date}
-    @client.lpush @jobLogQueue, JSON.stringify(job), (error) =>
+    entries = @formatLogEntries {error, request, response, elapsedTime, date}
+    async.each entries, @logEntry, callback
+
+  logEntry: (entry, callback) =>
+    @client.lpush @jobLogQueue, JSON.stringify(entry), (error) =>
       delete error.code if error?
       callback error
 
-  formatLogEntry: ({request,response,elapsedTime,date}) =>
+  formatLogEntries: ({request,response,elapsedTime,date}) =>
     todaySuffix = moment.utc().format('YYYY-MM-DD')
     requestMetadata  = _.cloneDeep(request?.metadata  ? {})
     responseMetadata = _.cloneDeep(response?.metadata ? {})
-
-    jobLogPrefix = ''
-    if requestMetadata.jobLog?.prefix?
-      jobLogPrefix = ":#{requestMetadata.jobLog.prefix}"
 
     {metrics} = responseMetadata
     delete requestMetadata.auth?.token
@@ -37,22 +36,27 @@ class JobLogger
 
     responseMetadata.success = (responseMetadata.code < 500)
 
-    index = "#{@indexPrefix}#{jobLogPrefix}-#{todaySuffix}"
+    requestMetadata.jobLogs ?= []
+    unless responseMetadata.success
+      requestMetadata.jobLogs.push 'failed'
 
-    return {
-      index: index
-      type: @type
-      body:
+    _.map requestMetadata.jobLogs, (jobLog) =>
+      index = "#{@indexPrefix}:#{jobLog}-#{todaySuffix}"
+
+      {
+        index: index
         type: @type
-        date: date
-        elapsedTime: elapsedTime
-        requestLagTime: requestLagTime
-        responseLagTime: responseLagTime
-        rawDataSize: response?.rawData?.length ? 0
-        request:
-          metadata: requestMetadata
-        response:
-          metadata: responseMetadata
-    }
+        body:
+          type: @type
+          date: date
+          elapsedTime: elapsedTime
+          requestLagTime: requestLagTime
+          responseLagTime: responseLagTime
+          rawDataSize: response?.rawData?.length ? 0
+          request:
+            metadata: requestMetadata
+          response:
+            metadata: responseMetadata
+      }
 
 module.exports = JobLogger

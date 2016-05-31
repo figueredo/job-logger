@@ -22,7 +22,7 @@ describe 'when called with a token', ->
       request:
         metadata:
           auth: {uuid: 'the-uuid', token: 'the-token'}
-          jobLog: enabled: true
+          jobLogs: ['sampled']
       response: {}
       elapsedTime: 0
     @sut.log record, done
