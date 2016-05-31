@@ -15,7 +15,6 @@ describe 'when called with a token', ->
       jobLogQueue: 'mah-queue'
       indexPrefix: 'foo'
       type: 'thipeh'
-      sampleRate: 1.00
     }
 
     record =
@@ -23,6 +22,7 @@ describe 'when called with a token', ->
       request:
         metadata:
           auth: {uuid: 'the-uuid', token: 'the-token'}
+          jobLog: enabled: true
       response: {}
       elapsedTime: 0
     @sut.log record, done

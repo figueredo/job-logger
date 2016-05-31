@@ -1,10 +1,11 @@
 redis = require 'fakeredis'
+moment = require 'moment'
 RedisNS = require '@octoblu/redis-ns'
 UUID = require 'uuid'
 JobLogger = require '../'
 
-describe 'sampleRate', ->
-  describe 'when instantiated with sampleRate of 0.00', ->
+describe 'logging', ->
+  describe 'when jobLog.enabled is not set', ->
     beforeEach (done) ->
       @clientId = UUID.v1()
 
@@ -14,7 +15,6 @@ describe 'sampleRate', ->
       @sut = new JobLogger {
         client
         jobLogQueue: 'someQueueName'
-        sampleRate: 0.00
         indexPrefix: 'foo'
         type: 'thipeh'
       }
@@ -34,7 +34,7 @@ describe 'sampleRate', ->
         expect(count).to.equal 0
         done()
 
-  describe 'when instantiated with sampleRate of 1.00', ->
+  describe 'when jobLog.enabled is true', ->
     beforeEach (done) ->
       @clientId = UUID.v1()
 
@@ -44,7 +44,6 @@ describe 'sampleRate', ->
       @sut = new JobLogger {
         client
         jobLogQueue: 'someQueueName'
-        sampleRate: 1.00
         indexPrefix: 'foo'
         type: 'thipeh'
       }
@@ -54,12 +53,32 @@ describe 'sampleRate', ->
         request:
           metadata:
             auth: {uuid: 'the-uuid', token: 'the-token'}
-        response: {}
-        elapsedTime: 0
+            jobLog:
+              enabled: true
+              prefix: 'bamboo'
+        response:
+          metadata:
+            metrics:
+              enqueueRequestAt: 1
+              dequeueRequestAt: 5
+              enqueueResponseAt: 10
+              dequeueResponseAt: 11
+          rawData: 'hello'
+
       @sut.log record, done
 
     it 'should log the record', (done) ->
-      @client.llen 'someQueueName', (error, count) =>
+      @client.brpop 'someQueueName', 1, (error, response) =>
         return done error if error?
-        expect(count).to.equal 1
+        return done new Error 'no response' unless response?
+        [channel,record] = response
+        expect(JSON.parse record).to.containSubset
+          index: "foo:bamboo-#{moment.utc().format('YYYY-MM-DD')}"
+          type: 'thipeh'
+          body:
+            type: 'thipeh'
+            elapsedTime: 10
+            requestLagTime: 4
+            responseLagTime: 1
+            rawDataSize: 5
         done()

@@ -2,15 +2,14 @@ _ = require 'lodash'
 moment = require 'moment'
 
 class JobLogger
-  constructor: ({@client, @indexPrefix, @jobLogQueue, @sampleRate, @type}) ->
+  constructor: ({@client, @indexPrefix, @jobLogQueue, @type}) ->
     throw new Error('client is required') unless @client?
     throw new Error('indexPrefix is required') unless @indexPrefix?
     throw new Error('jobLogQueue is required') unless @jobLogQueue?
-    throw new Error('sampleRate is required') unless @sampleRate?
     throw new Error('type is required') unless @type?
 
   log: ({error,request,response,elapsedTime,date}, callback) =>
-    return callback() if Math.random() > @sampleRate
+    return callback() unless request.metadata?.jobLog?.enabled
     job = @formatLogEntry {error,request,response,elapsedTime,date}
     @client.lpush @jobLogQueue, JSON.stringify(job), (error) =>
       delete error.code if error?
@@ -21,13 +20,16 @@ class JobLogger
     requestMetadata  = _.cloneDeep(request?.metadata  ? {})
     responseMetadata = _.cloneDeep(response?.metadata ? {})
 
+    jobLogPrefix = ''
+    if requestMetadata.jobLog?.prefix?
+      jobLogPrefix = ":#{requestMetadata.jobLog.prefix}"
+
     {metrics} = responseMetadata
     delete requestMetadata.auth?.token
 
-    if metrics
+    if metrics?
       date           ?= Math.floor(metrics.enqueueRequestAt)
       elapsedTime    ?= Math.floor(metrics.dequeueResponseAt - metrics.enqueueRequestAt)
-      jitter          = Math.floor(metrics.jitter / metrics.count) if metrics.count > 0
       requestLagTime  = Math.floor(metrics.dequeueRequestAt - metrics.enqueueRequestAt)
       responseLagTime = Math.floor(metrics.dequeueResponseAt - metrics.enqueueResponseAt)
 
@@ -35,7 +37,7 @@ class JobLogger
 
     responseMetadata.success = (responseMetadata.code < 500)
 
-    index = "#{@indexPrefix}-#{todaySuffix}"
+    index = "#{@indexPrefix}#{jobLogPrefix}-#{todaySuffix}"
 
     return {
       index: index
@@ -46,7 +48,6 @@ class JobLogger
         elapsedTime: elapsedTime
         requestLagTime: requestLagTime
         responseLagTime: responseLagTime
-        jitter: jitter
         rawDataSize: response?.rawData?.length ? 0
         request:
           metadata: requestMetadata
