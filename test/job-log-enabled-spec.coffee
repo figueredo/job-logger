@@ -96,10 +96,10 @@ describe 'logging', ->
         request:
           metadata:
             auth: {uuid: 'the-uuid', token: 'the-token'}
-            jobLogs: [ 'sampled', 'foo' ]
         response:
           metadata:
             code: 200
+            jobLogs: [ 'sampled', 'foo' ]
             metrics:
               enqueueRequestAt: 1
               dequeueRequestAt: 5

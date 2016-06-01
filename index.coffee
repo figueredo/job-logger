@@ -36,11 +36,11 @@ class JobLogger
 
     responseMetadata.success = (responseMetadata.code < 500)
 
-    requestMetadata.jobLogs ?= []
+    responseMetadata.jobLogs ?= []
     unless responseMetadata.success
-      requestMetadata.jobLogs.push 'failed'
+      responseMetadata.jobLogs.push 'failed'
 
-    _.map requestMetadata.jobLogs, (jobLog) =>
+    _.map responseMetadata.jobLogs, (jobLog) =>
       index = "#{@indexPrefix}:#{jobLog}-#{todaySuffix}"
 
       {
