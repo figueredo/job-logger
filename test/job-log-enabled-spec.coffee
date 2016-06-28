@@ -1,3 +1,6 @@
+{beforeEach, describe, it} = global
+{expect} = require 'chai'
+
 redis = require 'fakeredis'
 moment = require 'moment'
 RedisNS = require '@octoblu/redis-ns'
@@ -125,6 +128,7 @@ describe 'logging', ->
             index: "foo:sampled-#{moment.utc().format('YYYY-MM-DD')}"
             type: 'thipeh'
             body:
+              index: "foo:sampled-#{moment.utc().format('YYYY-MM-DD')}"
               type: 'thipeh'
               elapsedTime: 10
               requestLagTime: 4
@@ -134,7 +138,8 @@ describe 'logging', ->
 
       describe 'when popping the second record', ->
         it 'should log foo', (done) ->
-          @client.brpop 'someQueueName', 1, (error, response) =>
+          @client.brpop 'someQueueName', 1, (error) =>
+            return done error if error?
             @client.brpop 'someQueueName', 1, (error, response) =>
               return done error if error?
               return done new Error 'no response' unless response?
