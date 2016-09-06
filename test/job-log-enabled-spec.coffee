@@ -133,7 +133,9 @@ describe 'logging', ->
               elapsedTime: 10
               requestLagTime: 4
               responseLagTime: 1
-              rawDataSize: 5
+              response:
+                lagTime: 1
+                rawDataSize: 5
           done()
 
       describe 'when popping the second record', ->
@@ -150,7 +152,12 @@ describe 'logging', ->
                 body:
                   type: 'thipeh'
                   elapsedTime: 10
+                  request:
+                    lagTime: 4
+                    rawDataSize: 0
                   requestLagTime: 4
                   responseLagTime: 1
-                  rawDataSize: 5
+                  response:
+                    lagTime: 1
+                    rawDataSize: 5
               done()

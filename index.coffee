@@ -40,6 +40,18 @@ class JobLogger
     unless responseMetadata.success
       responseMetadata.jobLogs.push 'failed'
 
+    requestRawDataSize = 0
+    if request?.data?
+      requestRawDataSize = JSON.stringify(request.data).length
+    if request.rawData?
+      requestRawDataSize = request.rawData.length
+
+    responseRawDataSize = 0
+    if response?.data?
+      responseRawDataSize = JSON.stringify(response.data).length
+    if response.rawData?
+      responseRawDataSize = response.rawData.length
+
     _.map responseMetadata.jobLogs, (jobLog) =>
       index = "#{@indexPrefix}:#{jobLog}-#{todaySuffix}"
 
@@ -53,10 +65,14 @@ class JobLogger
           elapsedTime: elapsedTime
           requestLagTime: requestLagTime
           responseLagTime: responseLagTime
-          rawDataSize: response?.rawData?.length ? 0
+          rawDataSize: responseRawDataSize
           request:
+            lagTime: requestLagTime
+            rawDataSize: requestRawDataSize
             metadata: requestMetadata
           response:
+            lagTime: responseLagTime
+            rawDataSize: responseRawDataSize
             metadata: responseMetadata
       }
 
